@@ -1,0 +1,59 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "copsapi-wrapper"
+version = "1.0.0"
+description = "Typed, quota-aware Python client for the Critical Ops Public API v2, sync and async: profiles, leaderboards, match history, weapon stats, server status and Autohost with a live room watcher."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Matchmaking Live", email = "noreply@matchmaking.live" }]
+requires-python = ">=3.10"
+dependencies = ["httpx>=0.27,<1"]
+keywords = ["critical ops", "cops", "criticalops", "critical force", "api", "api-wrapper", "autohost", "esports", "matchmaking", "asyncio"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Framework :: AsyncIO",
+  "Topic :: Games/Entertainment",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.11", "build>=1.2", "twine>=5"]
+
+[project.urls]
+Homepage = "https://github.com/Matchmaking-Live/copsapi-wrapper-python"
+Repository = "https://github.com/Matchmaking-Live/copsapi-wrapper-python"
+Issues = "https://github.com/Matchmaking-Live/copsapi-wrapper-python/issues"
+"JavaScript version" = "https://www.npmjs.com/package/copsapi-wrapper"
+
+[project.scripts]
+copsapi = "copsapi.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/copsapi"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/copsapi", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = false
+warn_unused_ignores = true
+files = ["src/copsapi"]
