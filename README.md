@@ -59,7 +59,7 @@ What a token can do depends on its permissions:
 | Endpoints | Needs |
 | --- | --- |
 | Profiles, servers, match history, weapon stats, leaderboards | Any valid token |
-| Autohost (`create`, `poll`, `control`, `host`, the watcher) | A token with the `Autohost` permission |
+| Autohost (`create`, `poll`, `control`, `host`, the watcher) | A token with the `Autohost` permission (Developer Issued) |
 
 There are three ways to pass the token:
 
