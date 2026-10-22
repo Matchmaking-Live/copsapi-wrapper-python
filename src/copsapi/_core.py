@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from enum import Enum
 from typing import Any, Iterable, Optional, Sequence, TypeVar, Union
 
 from .catalog import GAME_TYPES, game_mode, is_hostable, map_id, map_name
@@ -47,14 +48,21 @@ def resolve_base_url(base_url: Optional[str]) -> str:
     return (base_url or os.environ.get("COPS_API_BASE") or DEFAULT_BASE_URL).rstrip("/")
 
 
+def plain(value: Any) -> Any:
+    if isinstance(value, Enum):
+        return value.value
+    return value
+
+
 def build_query(query: Optional[dict[str, Any]]) -> dict[str, str]:
     out: dict[str, str] = {}
-    for key, value in (query or {}).items():
+    for key, raw in (query or {}).items():
+        value = plain(raw)
         if value is None:
             continue
         if isinstance(value, (list, tuple)):
             if value:
-                out[key] = ",".join(str(v) for v in value)
+                out[key] = ",".join(str(plain(v)) for v in value)
         elif isinstance(value, bool):
             out[key] = "true" if value else "false"
         else:
@@ -160,10 +168,11 @@ def order_profiles(refs: Sequence[PlayerRef], found: dict[str, Profile]) -> list
 
 
 def game_type_code(game_type: Union[str, int]) -> int:
+    game_type = plain(game_type)
     if isinstance(game_type, int):
         if game_type not in (1, 2):
             raise ValueError("game_type must be 1 (ranked) or 2 (casual)")
-        return game_type
+        return int(game_type)
     if game_type not in GAME_TYPES:
         raise ValueError("game_type must be 'ranked' or 'casual'")
     return GAME_TYPES[game_type]
@@ -206,7 +215,7 @@ def create_body(server_id: int, map_: Union[int, str], mode: Union[int, str], ro
         )
     if not room_name.strip():
         raise local_error("bad_request", "room_name must not be empty.", path, "POST")
-    return {"server_id": server_id, "room_name": room_name, "password": password or "", "map_id": map_value, "game_mode_id": mode_id}
+    return {"server_id": int(server_id), "room_name": room_name, "password": password or "", "map_id": int(map_value), "game_mode_id": int(mode_id)}
 
 
 def check_command(command: str, user_id: Optional[int]) -> None:

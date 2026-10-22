@@ -23,6 +23,7 @@ from ._core import (
     match_refs,
     order_profiles,
     parse_json,
+    plain,
     ref_key,
     resolve_base_url,
     resolve_token,
@@ -480,12 +481,12 @@ class LeaderboardsApi:
         page = max(1, int(page))
 
         def load() -> LeaderboardPage:
-            data = self._client.request("/leaderboards", query={"type": type, "page": page, "rank": rank})
+            data = self._client.request("/leaderboards", query={"type": plain(type), "page": page, "rank": plain(rank)})
             size = int(data.get("leaderboard_size", 0))
             entries = [from_dict(LeaderboardEntry, e) for e in data.get("entries", [])]
             return LeaderboardPage(type, page, rank, size, -(-size // 10), entries)
 
-        return self._client._cached(f"leaderboard:{type}:{rank}:{page}", "leaderboard", fresh, load)
+        return self._client._cached(f"leaderboard:{plain(type)}:{plain(rank)}:{page}", "leaderboard", fresh, load)
 
     def iterate(self, type: str, *, rank: Optional[int] = None, start_page: int = 1, max_pages: Optional[int] = None, fresh: bool = False) -> Iterator[LeaderboardEntry]:
         seen: set[int] = set()
@@ -566,7 +567,8 @@ class AutohostApi:
 
     def control(self, game_id: int, command: str, user_id: Optional[int] = None) -> AutohostGame:
         check_command(command, user_id)
-        data = self._call("/autohost/control", "POST", body={"id": game_id, "command": command, "user_id": user_id})
+        body = {"id": int(game_id), "command": str(plain(command)), "user_id": None if user_id is None else int(user_id)}
+        data = self._call("/autohost/control", "POST", body=body)
         return from_dict(AutohostGame, data["autohost"])
 
     def kick(self, game_id: int, user_id: int) -> AutohostGame:

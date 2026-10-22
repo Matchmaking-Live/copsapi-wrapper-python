@@ -109,3 +109,10 @@ def test_constants_can_be_passed_to_client_methods(make):
     assert mock.calls[1].body == {"id": 1, "command": "kick", "user_id": 5}
     assert mock.calls[2].query["type"] == "kills"
     assert mock.calls[3].query["game_type"] == "2"
+
+
+def test_constants_become_plain_values_in_requests_on_every_python_version():
+    from copsapi._core import build_query, game_type_code
+
+    assert build_query({"type": LeaderboardType.KILLS, "game_type": GameType.CASUAL, "ids": [MapId.CANALS, 5], "rank": None}) == {"type": "kills", "game_type": "2", "ids": "613,5"}
+    assert type(game_type_code(GameType.RANKED)) is int
