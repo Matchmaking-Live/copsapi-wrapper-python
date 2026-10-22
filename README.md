@@ -94,14 +94,14 @@ If your token lacks `Autohost`, hosting calls raise `PermissionDeniedError` with
 ## Sync and async
 
 ```python
-from copsapi import CopsClient, AsyncCopsClient
+from copsapi import CopsClient, AsyncCopsClient, LeaderboardType
 
 with CopsClient() as cops:
     servers = cops.servers.online()
 
 async with AsyncCopsClient() as cops:
     servers = await cops.servers.online()
-    async for entry in cops.leaderboards.iterate("kills", max_pages=3):
+    async for entry in cops.leaderboards.iterate(LeaderboardType.KILLS, max_pages=3):
         print(entry.position, entry.basic_info.name)
 ```
 
@@ -177,9 +177,11 @@ server = cops.servers.pick(region="EU")
 ## Match history
 
 ```python
+from copsapi import GameType
+
 history = cops.matches.history(user_id)
 match = cops.matches.one(history[0].id)
-recent = cops.matches.recent(user_id, limit=5, game_type="ranked")
+recent = cops.matches.recent(user_id, limit=5, game_type=GameType.RANKED)
 ```
 
 - `history` returns the player's recent matches, newest first. The history resets with each game update.
@@ -189,26 +191,31 @@ recent = cops.matches.recent(user_id, limit=5, game_type="ranked")
 ## Weapon stats
 
 ```python
-weapons = cops.stats.weapons(user_id, "ranked")
-best = cops.stats.top_weapons(user_id, by="k", limit=5)
+from copsapi import GameType
+
+ranked = cops.stats.weapons(user_id, GameType.RANKED)
+casual = cops.stats.weapons(user_id, GameType.CASUAL)
+best = cops.stats.top_weapons(user_id, game_type=GameType.RANKED, by="k", limit=5)
 ```
 
-- The game type is `"ranked"` or `"casual"`. Custom games count as casual.
+- The game type is `GameType.RANKED` or `GameType.CASUAL`; the strings `"ranked"` and `"casual"` work too. Custom games count as casual.
 - `top_weapons` sorts by kills (`k`), assists (`a`) or headshots (`h`). Each `WeaponStats` also has a `.headshot_rate`.
 
 ## Leaderboards
 
 ```python
-page = cops.leaderboards.page("mmr", page=1)
-elite = cops.leaderboards.page("mmr", rank=9)
+from copsapi import LeaderboardType
 
-for entry in cops.leaderboards.iterate("kills", max_pages=10):
+page = cops.leaderboards.page(LeaderboardType.MMR, page=1)
+elite = cops.leaderboards.page(LeaderboardType.MMR, rank=9)
+
+for entry in cops.leaderboards.iterate(LeaderboardType.KILLS, max_pages=10):
     print(entry.position, entry.basic_info.name, entry.score)
 
-top50 = cops.leaderboards.top("wins", 50)
+top50 = cops.leaderboards.top(LeaderboardType.WINS, 50)
 ```
 
-- The types are `mmr`, `kills`, `deaths`, `assists`, `matches`, `wins`, `losses`, `xp` and `mvp`. Pages hold 10 entries.
+- The types are `LeaderboardType.MMR`, `KILLS`, `DEATHS`, `ASSISTS`, `MATCHES`, `WINS`, `LOSSES`, `XP` and `MVP`; the plain strings (`"mmr"`, `"kills"` and so on) work too. Pages hold 10 entries.
 - `page` returns a `LeaderboardPage(type, page, rank, size, pages, entries)`. `rank` (0 to 9) filters to one rank.
 - Players move as matches end, so `iterate` skips anyone already yielded on an earlier page.
 
@@ -219,25 +226,27 @@ This needs a token with the `Autohost` permission. To check before offering host
 ### One call: host, wait for the code, add owners
 
 ```python
+from copsapi import GameModeId, MapId
+
 server = cops.servers.pick(region="EU")
 room = cops.autohost.host(
     server_id=server.id,
-    mode="tournament",
-    map="Castello",
+    mode=GameModeId.TOURNAMENT_MODE,
+    map=MapId.CASTELLO,
     room_name="Scrim #42",
     owners=[captain_user_id],
 )
 print(f"Join with code {room.code}, password {room.password}")
 ```
 
-- `mode` and `map` accept names (`"Tournament Mode"`, `"castello"`) or ids. Combinations the API doesn't allow raise `BadRequestError` before the request is sent; pass `validate=False` if Critical Force added a map after this release.
+- `mode` and `map` take a `GameModeId` and a `MapId`. Names (`"Tournament Mode"`, `"castello"`) and raw ids work too. Combinations the API doesn't allow raise `BadRequestError` before the request is sent; pass `validate=False` if Critical Force added a map after this release.
 - A random 6-character password is generated unless you pass `password="..."`. Pass `password=False` for an open room.
 - `host` raises `GameRejectedError` if the game server refuses the game (it's full or in maintenance, or the token already hosts 10 games there). It raises `GameGoneError`, or `ConnectionFailedError` with code `timeout`, if the room never appears.
 
 ### Step by step
 
 ```python
-game = cops.autohost.create(server_id=6, mode=15847, map=15391, room_name="Final", password="abc")
+game = cops.autohost.create(server_id=6, mode=GameModeId.DEFUSE, map=MapId.RAID, room_name="Final", password="abc")
 ready = cops.autohost.wait_for_room(game.id)
 games = cops.autohost.poll([game.id, other_id])
 one = cops.autohost.get(game.id)
@@ -250,12 +259,14 @@ one = cops.autohost.get(game.id)
 ### Room commands
 
 ```python
+from copsapi import AutohostCommand
+
 cops.autohost.kick(game_id, user_id)
 cops.autohost.add_owner(game_id, user_id)
 cops.autohost.remove_owner(game_id, user_id)
 cops.autohost.restart(game_id)
 cops.autohost.close(game_id)
-cops.autohost.control(game_id, "kick", user_id)
+cops.autohost.control(game_id, AutohostCommand.KICK, user_id)
 ```
 
 - `kick` removes the player and keeps them out for an hour.

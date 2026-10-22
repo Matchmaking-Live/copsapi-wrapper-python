@@ -1,6 +1,6 @@
 import sys
 
-from copsapi import CopsClient, account_age_label, career_totals, describe_ban
+from copsapi import CopsClient, GameType, account_age_label, career_totals, describe_ban
 
 name = sys.argv[1] if len(sys.argv) > 1 else "SomePlayer"
 
@@ -10,7 +10,7 @@ with CopsClient() as cops:
         sys.exit(f"{name} does not exist.")
 
     ranked = career_totals(player, "ranked")
-    weapons = cops.stats.top_weapons(player.user_id, limit=3)
+    weapons = cops.stats.top_weapons(player.user_id, game_type=GameType.RANKED, limit=3)
 
     clan = f" [{player.clan.basic_info.tag}]" if player.clan else ""
     print(f"{player.name}{clan}, level {player.basic_info.player_level.level}")

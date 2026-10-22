@@ -1,6 +1,6 @@
 import sys
 
-from copsapi import CopsClient, GameRejectedError, map_name, summarize_result
+from copsapi import CopsClient, GameModeId, GameRejectedError, MapId, map_name, summarize_result
 
 CAPTAINS = [111111, 222222]
 LATE_AFTER = 10 * 60
@@ -14,7 +14,7 @@ with CopsClient(rate_limit_reserve=15) as cops:
         sys.exit("No game server is online.")
 
     try:
-        room = cops.autohost.host(server_id=server.id, mode="tournament", map="Castello", room_name="Scrim", owners=CAPTAINS)
+        room = cops.autohost.host(server_id=server.id, mode=GameModeId.TOURNAMENT_MODE, map=MapId.CASTELLO, room_name="Scrim", owners=CAPTAINS)
     except GameRejectedError as err:
         sys.exit(f"The game server refused the game: {err}")
 

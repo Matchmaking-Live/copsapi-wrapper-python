@@ -1,7 +1,7 @@
 import asyncio
 import csv
 
-from copsapi import AsyncCopsClient
+from copsapi import AsyncCopsClient, LeaderboardType
 
 
 async def main() -> None:
@@ -10,7 +10,7 @@ async def main() -> None:
             writer = csv.writer(file)
             writer.writerow(["position", "user_id", "name", "clan", "mmr", "wins", "losses"])
             count = 0
-            async for entry in cops.leaderboards.iterate("mmr", rank=9, max_pages=20):
+            async for entry in cops.leaderboards.iterate(LeaderboardType.MMR, rank=9, max_pages=20):
                 clan = entry.clan.basic_info.tag if entry.clan else ""
                 writer.writerow([entry.position, entry.basic_info.user_id, entry.basic_info.name, clan, entry.score, entry.ranked.wins, entry.ranked.losses])
                 count += 1
