@@ -12,7 +12,7 @@ from .models import Profile
 
 T = TypeVar("T")
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 DEFAULT_BASE_URL = "https://latest.prod.copsapi.criticalforce.fi/api/public/v2"
 TOKEN_PATTERN = re.compile(r"^cops_[0-9a-f]{48}$", re.I)
 MATCH_ID_PATTERN = re.compile(r"^[0-9a-f]{64}$")

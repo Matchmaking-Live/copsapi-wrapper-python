@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- On Python 3.10, constants such as `GameType.CASUAL` passed to client methods are now sent to the API as their plain values (`2`), not as their names.
+- The README and examples use the named constants throughout.
+
 ## 1.1.0
 
 - Named constants for every code the API uses, such as `BanReason.HACKING`, `UserType.MODERATOR`, `MapId.CASTELLO`, `GameModeId.TOURNAMENT_MODE`, `LeaderboardType.KILLS` and `AutohostCommand.KICK`. Number codes are `IntEnum`s and text codes are `str` enums, so both compare equal to the plain values in the models.
