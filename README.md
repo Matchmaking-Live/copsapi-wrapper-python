@@ -45,6 +45,7 @@ It needs Python 3.10 or newer, and its only dependency is [httpx](https://www.py
 - [Errors](#errors)
 - [Caching](#caching)
 - [Game catalog](#game-catalog)
+- [Named constants](#named-constants)
 - [Helpers](#helpers)
 - [Command line](#command-line)
 - [Models](#models)
@@ -471,6 +472,51 @@ modes_for("Purify")
 The package also exports these label tables:
 - `BAN_REASONS`, `USER_TYPES`, `ACCOUNT_AGES`, `PARTY_INVITE_PERMISSIONS` and `CLAN_RANKS`, which map API codes to readable text.
 - `LEADERBOARD_TYPES`, `MATCH_STATES`, `GAME_TYPES`, `INPUT_DEVICES` and `AUTOHOST_COMMANDS`.
+
+## Named constants
+
+Every code the API uses has a named constant, so you don't have to remember what `2` or `15847` means:
+
+```python
+from copsapi import BanReason, UserType, MapId, GameModeId, LeaderboardType, AutohostCommand, InputDeviceFlag
+
+if profile.ban and profile.ban.reason == BanReason.HACKING:
+    flag_for_review(profile)
+if player.user_type == UserType.MODERATOR:
+    print("a moderator is in the room")
+
+cops.autohost.create(server_id=server_id, map=MapId.CASTELLO, mode=GameModeId.TOURNAMENT_MODE, room_name="Final")
+cops.autohost.control(game_id, AutohostCommand.KICK, user_id)
+page = cops.leaderboards.page(LeaderboardType.KILLS)
+
+devices = InputDeviceFlag(player.input_device_flags)
+if InputDeviceFlag.TOUCH in devices:
+    print("plays on a touch screen")
+```
+
+| Constant | Kind | Members |
+| --- | --- | --- |
+| `UserType` | `IntEnum` | `SPECTATOR`, `USER`, `ASSISTANT_MOD`, `MODERATOR`, `VETERAN_MOD`, `DEVELOPER` |
+| `BanType` | `IntEnum` | `PERMANENT`, `TEMPORARY` |
+| `BanReason` | `IntEnum` | `UNKNOWN`, `FRAUD_ATTEMPT`, `HACKING`, `GRIEFING`, `VERBAL_ABUSE`, `IDLE`, `SPAM`, `REPORT_ABUSE`, `ACCOUNT_TRADING`, `GLITCHING`, `GHOSTING`, `PARTYING_WITH_HACKER`, `UNDER_INVESTIGATION`, `MARKETPLACE_ABUSE` |
+| `ClanMemberRank` | `IntEnum` | `MEMBER`, `OFFICER`, `CO_LEADER`, `LEADER` |
+| `PartyInvitePermission` | `IntEnum` | `ANYBODY`, `ONLY_FRIENDS_AND_CLAN_MEMBERS`, `NOBODY` |
+| `GameType` | `IntEnum` | `RANKED`, `CASUAL` |
+| `MatchResult` | `IntEnum` | `WIN`, `LOSS`, `DRAW` |
+| `InputDeviceFlag` | `IntFlag` | `KEYBOARD_MOUSE`, `TOUCH`, `GAMEPAD` |
+| `MapId` | `IntEnum` | Every map, such as `CANALS` or `CASTELLO` |
+| `GameModeId` | `IntEnum` | Every hostable mode, such as `DEFUSE`, `TEAM_DEATHMATCH` or `TOURNAMENT_MODE` |
+| `AccountAge` | `str` enum | `UNDER_A_WEEK` (`"1w"`) to `FOUR_YEARS_OR_MORE` (`"5y+"`) |
+| `WinCondition` | `str` enum | `TEAM_ELIMINATED`, `TEAM_KILLS`, `TIME_UP`, `SURRENDERED` |
+| `LeaveReason` | `str` enum | `LEFT`, `TIMEOUT`, `KICKED`, `BANNED`, `PING_LIMIT`, `AFK` |
+| `MatchState` | `str` enum | `WAITING_FOR_PLAYERS`, `STARTING`, `FREEZETIME`, `ON_GOING`, `BOMB_PLANTED`, `WIN`, `TEAM_FLIP`, `GAME_END`, `CHANGING_MAP` |
+| `AutohostCommand` | `str` enum | `KICK`, `RESTART`, `ROOM_OWNER_ADD`, `ROOM_OWNER_REMOVE`, `CLOSE` |
+| `LeaderboardType` | `str` enum | `MMR`, `KILLS`, `DEATHS`, `ASSISTS`, `MATCHES`, `WINS`, `LOSSES`, `XP`, `MVP` |
+| `GameStatus` | `str` enum | `OPEN`, `ENDED` |
+
+The models keep plain `int` and `str` values, and every constant compares equal to them: `BanReason.HACKING == 2` and `LeaveReason.AFK == "AFK"` are both true. Every client method that takes a map, mode, game type, leaderboard type or command also accepts the constants.
+
+Some values can grow as Critical Force updates the game: maps, game modes, win conditions, leave reasons and match states. The fields stay plain values, so a new map or reason never raises an error while parsing a response. If you convert a value yourself, for example `MapId(game.room.map_id)`, handle the `ValueError` you get for a value added after this release.
 
 ## Helpers
 

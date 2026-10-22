@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- Named constants for every code the API uses, such as `BanReason.HACKING`, `UserType.MODERATOR`, `MapId.CASTELLO`, `GameModeId.TOURNAMENT_MODE`, `LeaderboardType.KILLS` and `AutohostCommand.KICK`. Number codes are `IntEnum`s and text codes are `str` enums, so both compare equal to the plain values in the models.
+- `InputDeviceFlag` is an `IntFlag`: `InputDeviceFlag(player.input_device_flags)` decodes the bitmask, and `has_input_device()` checks for one device.
+- Every client method that takes a map, mode, game type, leaderboard type or command also accepts these constants. Nothing else changed, so existing code keeps working.
+
 ## 1.0.0
 
 First release, covering the Critical Ops Public API v2.0.0:
